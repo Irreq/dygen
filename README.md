@@ -1,2 +1,2 @@
-# dygen
-dygen => dynamic generation
+# happy
+High-level automatic processing python
