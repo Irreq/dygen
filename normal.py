@@ -32,6 +32,18 @@ from sklearn.neighbors.kde import KernelDensity
 
 from scipy.signal import argrelextrema
 
+def constrained_sum_sample_pos(n, total):
+    """Return a randomly chosen list of n positive integers summing to total.
+    Each such list is equally likely to occur."""
+
+    dividers = sorted(np.random.choice(range(1, total), n - 1))
+    return [a - b for a, b in zip(dividers + [total], [0] + dividers)]
+
+def constrained_sum_sample_nonneg(n, total):
+    """Return a randomly chosen list of n nonnegative integers summing to total.
+    Each such list is equally likely to occur."""
+
+    return [x - 1 for x in constrained_sum_sample_pos(n, total + n)]
 
 class KernelGenerator(object):
 
@@ -93,7 +105,7 @@ class KernelGenerator(object):
         demodulated_index = [int((i/initial_length)*start_len) for i in minima]
 
         return start[np.array(demodulated_index)]
-        
+
 
     def kernel_generator(self, localkernel):
 
@@ -241,11 +253,36 @@ class KernelGenerator(object):
 
             data = kernel_id
 
+        else:
+            data = kernel_id
+
         data = [i*(upper-lower)+lower for i in data]
 
-        self.bias[kernel_id] = data
+        if type(kernel_id) == str:
+
+            self.bias[kernel_id] = data
 
         return data
+
+    def fastgen(self, distribution):
+
+        resolution = self.size
+
+        window = len(distribution) ** -1
+
+        nd = self.getbias()["normal_distribution"]
+
+        window_distribution = self.setwindow(0,window,nd)
+
+        final_distribution = []
+
+        for i, value in enumerate(distribution):
+
+            data = [i*window+np.random.choice(window_distribution) for _ in range(int(value*resolution))]
+
+            final_distribution.extend(data)
+
+        return np.array(final_distribution)
 
 def test():
 
@@ -294,6 +331,10 @@ def test():
     plt.hist(nomdist, bins=np.linspace(0,resolution)/resolution)
 
     plt.show()
+
+
+
+
 
 if __name__ == '__main__':
 
