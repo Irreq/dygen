@@ -18,13 +18,13 @@ Methods used by the program:
 Clone the project:
 
 ```
-git clone https://github.com/Irreq/gyarbete.git
+git clone https://github.com/Irreq/multi-bias-gen.git
 ```
 
 Move to the project folder:
 
 ```
-cd PROJECT
+cd multi-bias-gen
 ```
 
 Install dependencies:
