@@ -134,11 +134,6 @@ def argrelextrema(data, comparator, axis=0, order=1, mode='clip'):
     return np.nonzero(results)
 
 
-
-
-
-
-
 def constrained_sum_sample_pos(n, total):
 
     """
@@ -188,6 +183,35 @@ def constrained_sum_sample_nonneg(n, total):
     """
 
     partitioned = [x - 1 for x in constrained_sum_sample_pos(n, total + n)]
+
+    return partitioned
+
+def partion_n_times(n, total):
+
+    """
+    Integer partitioning of same size.
+
+    NOTE:                   If mod(total, n) != 0, then some partions will
+                            be of larger size, but together sum up to total.
+
+    ARGUMENTS:
+        - n:                int() The number of groups of integer that
+                            together sums up to 'n'. Eg, 3
+
+        - total:            int() An integer which will be partitioned of
+                            random size. Eg, 17
+    RETURNS:
+        - partitioned:      list() A partition of size 'n' that sums up
+                            to 'total'. Eg, [7, 4, 6]
+
+    TODO:                   None
+    """
+
+    modulo = total % n
+    partitioned = [list(range(int(total/n))) for i in range(n)]
+
+    for index in np.random.choice(list(range(len(partitioned))), modulo, replace=False): # Getting indexes of mod(total, n) so they will be appended by 1
+        partitioned[index].append(max(partitioned[index])+1)
 
     return partitioned
 
@@ -431,18 +455,95 @@ class KernelGenerator(object):
         return np.array(final_distribution)
 
 
-if __name__ == '__main__':
-    import matplotlib.pyplot as plt
+
+
+def generate(distribution, size=200, win=[0.0, 1.0], kernel="gaussian"):
+
     kg = KernelGenerator()
 
-    kg.start()
+    bias = kg.fastgen(DISTRIBUTION)
 
-    bias = kg.fastgen([0.1, 0.4, 0.3, 0.2])
+    # A window will be added to bind the distribution between 0 and 0.5
+    bias = kg.setwindow(0, 0.5, bias)
 
-    # bias = kg.setwindow(0, 0.5, bias)
+    return test
 
-    # print(bias)
+class BiasedDistribution(object):
 
-    plt.hist(bias)
+    def __init__(self, size=200, window=[0.0, 1.0], kernel="gaussian"):
 
-    plt.show()
+        self.size = size
+        self.window = win
+        self.kernel = kernel
+
+        self.dataset = None
+
+
+    # Fix these so they are relevant
+
+    def setwindow(self, window):
+        if type(window) == list:
+            self.window = window
+    def setsize(self, size):
+        if type(size) == int:
+            self.size = size
+    def setkernel(self, kernel):
+        if type(kernel) == str:
+            self.kernel = kernel
+
+    # ================================
+
+    def kernel_generator(self, localkernel):
+
+        normal_distributions = [self.kernel_normal_dist(localkernel[k][0], localkernel[k][1], self.size) for k in range(len(localkernal))]
+
+        normal_distributions.sort()
+
+        self.data = normal_distributions[::int(round(len(normal_distributions)/self.size))]
+
+        if len(self.data) > self.size:
+
+            for i in range(len(self.data)-self.size):
+
+                del self.data[np.random.randint(len(self.data))]
+
+
+        elif len(self.data) < self.size:
+
+            local_average = np.mean(np.array(self.data))
+
+            values = self.kernel_density()[0]
+
+            values = self.kernel_normal_dist(values, 0.1, size=self.size-len(self.data))
+
+            values = [(i+local_average)/2 for i in values]
+
+            self.data.extend(values)
+
+            self.data.sort()
+
+        return self.data
+
+    def generate(self, distribution):
+        if type(distribution) != list: # The istribution must be a list
+            return
+
+        # resolution = self.size
+        #
+        # window = len(distribution) ** -1
+        #
+        # nd = self.getbias()["normal_distribution"]
+        #
+        # # window_distribution = self.setwindow(0,window,nd)
+        #
+        # final_distribution = []
+        #
+        # for i, value in enumerate(distribution):
+        #
+        #     data = [i*window+np.random.choice(window_distribution) for _ in range(int(value*resolution))]
+        #
+        #     final_distribution.extend(data)
+        #
+        # return np.array(final_distribution)
+
+        dist = [1, 1, 0.5, 1]
