@@ -1,49 +1,195 @@
 #!/usr/bin/env python3
-
 # -*- coding: utf-8 -*-
 
-"""
-    Documentation
+# src/normal.py
 
-    A class for generating multi biased
-    distributions using Kernel Density Estimation (KDE)
+# Author : Irreq
 
 """
+DOCUMENTATION:          Generate a synthetic normal distribution.
+                        Generate a naive integer partition.
 
+TODO:                   None
 """
-
-    TODO
-
-"""
-
-__author__ = "Isac Bruce"
-__copyright__ = "Copyright 2020, Irreq"
-__credits__ = ["Isac Bruce"]
-__license__ = "GPL"
-__version__ = "1.0.1"
-__maintainer__ = "Isac Bruce"
-__email__ = "irreq@protonmail.com"
-__status__ = "Production"
 
 
 import numpy as np
 
 from sklearn.neighbors.kde import KernelDensity
 
-from scipy.signal import argrelextrema
+def addnoise(self, *snr):
+
+    """ snr being signal to noise ratio, if nothing has been added, the ratio will be 20%/80% """
+
+    if len(snr) > 0:
+        snr = snr[0]
+
+    else:
+        snr = 0.2
+
+    noise = np.random.normal(0,1,len(data)) * snr
+
+    added_noise = np.concatenate((self.data, noise))
+
+    return added_noise
+
+def _boolrelextrema(data, comparator, axis=0, order=1, mode='clip'):
+    """
+    Calculate the relative extrema of `data`.
+    Relative extrema are calculated by finding locations where
+    ``comparator(data[n], data[n+1:n+order+1])`` is True.
+    Parameters
+    ----------
+    data : ndarray
+        Array in which to find the relative extrema.
+    comparator : callable
+        Function to use to compare two data points.
+        Should take two arrays as arguments.
+    axis : int, optional
+        Axis over which to select from `data`. Default is 0.
+    order : int, optional
+        How many points on each side to use for the comparison
+        to consider ``comparator(n,n+x)`` to be True.
+    mode : str, optional
+        How the edges of the vector are treated. 'wrap' (wrap around) or
+        'clip' (treat overflow as the same as the last (or first) element).
+        Default 'clip'. See numpy.take.
+    Returns
+    -------
+    extrema : ndarray
+        Boolean array of the same shape as `data` that is True at an extrema,
+        False otherwise.
+    See also
+    --------
+    argrelmax, argrelmin
+    Examples
+    --------
+    >>> testdata = np.array([1,2,3,2,1])
+    >>> _boolrelextrema(testdata, np.greater, axis=0)
+    array([False, False,  True, False, False], dtype=bool)
+    """
+    if((int(order) != order) or (order < 1)):
+        raise ValueError('Order must be an int >= 1')
+
+    datalen = data.shape[axis]
+    locs = np.arange(0, datalen)
+
+    results = np.ones(data.shape, dtype=bool)
+    main = data.take(locs, axis=axis, mode=mode)
+    for shift in range(1, order + 1):
+        plus = data.take(locs + shift, axis=axis, mode=mode)
+        minus = data.take(locs - shift, axis=axis, mode=mode)
+        results &= comparator(main, plus)
+        results &= comparator(main, minus)
+        if(~results.any()):
+            return results
+    return results
+
+def argrelextrema(data, comparator, axis=0, order=1, mode='clip'):
+    """
+    Calculate the relative extrema of `data`.
+    Parameters
+    ----------
+    data : ndarray
+        Array in which to find the relative extrema.
+    comparator : callable
+        Function to use to compare two data points.
+        Should take two arrays as arguments.
+    axis : int, optional
+        Axis over which to select from `data`. Default is 0.
+    order : int, optional
+        How many points on each side to use for the comparison
+        to consider ``comparator(n, n+x)`` to be True.
+    mode : str, optional
+        How the edges of the vector are treated. 'wrap' (wrap around) or
+        'clip' (treat overflow as the same as the last (or first) element).
+        Default is 'clip'. See `numpy.take`.
+    Returns
+    -------
+    extrema : tuple of ndarrays
+        Indices of the maxima in arrays of integers. ``extrema[k]`` is
+        the array of indices of axis `k` of `data`. Note that the
+        return value is a tuple even when `data` is 1-D.
+    See Also
+    --------
+    argrelmin, argrelmax
+    Notes
+    -----
+    .. versionadded:: 0.11.0
+    Examples
+    --------
+    >>> from scipy.signal import argrelextrema
+    >>> x = np.array([2, 1, 2, 3, 2, 0, 1, 0])
+    >>> argrelextrema(x, np.greater)
+    (array([3, 6]),)
+    >>> y = np.array([[1, 2, 1, 2],
+    ...               [2, 2, 0, 0],
+    ...               [5, 3, 4, 4]])
+    ...
+    >>> argrelextrema(y, np.less, axis=1)
+    (array([0, 2]), array([2, 1]))
+    """
+    results = _boolrelextrema(data, comparator,
+                              axis, order, mode)
+    return np.nonzero(results)
+
+
+
+
+
+
 
 def constrained_sum_sample_pos(n, total):
-    """Return a randomly chosen list of n positive integers summing to total.
-    Each such list is equally likely to occur."""
+
+    """
+    Integer partitioning of 'same' size.
+
+    NOTE:                   Return a randomly chosen list of n positive
+                            integers summing to total. Each such list is
+                            equally likely to occur.
+    ARGUMENTS:
+        - n:                int() The number of groups of integer that
+                            together sums up to 'n'. Eg, 3
+
+        - total:            int() An integer which will be partitioned of
+                            random size. Eg, 17
+    RETURNS:
+        - partitioned:      list() A partition of size 'n' that sums up
+                            to 'total'. Eg, [6, 6, 5]
+
+    TODO:                   None
+    """
 
     dividers = sorted(np.random.choice(range(1, total), n - 1))
-    return [a - b for a, b in zip(dividers + [total], [0] + dividers)]
+
+    partitioned = [a - b for a, b in zip(dividers + [total], [0] + dividers)]
+
+    return partitioned
 
 def constrained_sum_sample_nonneg(n, total):
-    """Return a randomly chosen list of n nonnegative integers summing to total.
-    Each such list is equally likely to occur."""
 
-    return [x - 1 for x in constrained_sum_sample_pos(n, total + n)]
+    """
+    Integer partitioning of random similar size.
+
+    NOTE:                   Return a randomly chosen list of n nonnegative
+                            integers summing to total. Each such list is
+                            equally likely to occur.
+    ARGUMENTS:
+        - n:                int() The number of groups of integer that
+                            together sums up to 'n'. Eg, 3
+
+        - total:            int() An integer which will be partitioned of
+                            random size. Eg, 17
+    RETURNS:
+        - partitioned:      list() A partition of size 'n' that sums up
+                            to 'total'. Eg, [7, 4, 6]
+
+    TODO:                   None
+    """
+
+    partitioned = [x - 1 for x in constrained_sum_sample_pos(n, total + n)]
+
+    return partitioned
 
 class KernelGenerator(object):
 
@@ -284,58 +430,19 @@ class KernelGenerator(object):
 
         return np.array(final_distribution)
 
-def test():
 
-    """ Example showing a biased distribution """
-
+if __name__ == '__main__':
     import matplotlib.pyplot as plt
-
-    # I have chosen two distributions
-    # her, but you could use whatever
-    # you wan't
-
-    generic_bias_instructions = {
-
-        "medical_conditions" : [[0.0, 0.1],
-                                [0.72, 0.06],
-                                [1.0, 0.4],
-                                [0.35, 0.1],],
-
-        "random_distribution" : [[0.0, 0.1],
-                                 [0.72, 0.1],
-                                 [1.0, 0.4],
-                                 [0.35, 0.1],]
-    }
-
-    resolution = 5000
-
-    kg = KernelGenerator(size=resolution)
+    kg = KernelGenerator()
 
     kg.start()
 
-    bias = kg.addbias(generic_bias_instructions)
+    bias = kg.fastgen([0.1, 0.4, 0.3, 0.2])
 
-    nomdist = kg.setwindow(0,4,"normal_distribution")
+    # bias = kg.setwindow(0, 0.5, bias)
 
-    nomdist = np.array(nomdist)
+    # print(bias)
 
-    print('elements : {}\nmean : {}\nmax : {}\nmin : {}'.format(len(nomdist),np.mean(np.array(nomdist)), max(nomdist), min(nomdist)))
-
-
-
-    # To get all stored biases :
-
-    # bias = kg.getbias()
-
-    # plt.hist(np.array(bias["normal_distribution"]), bins=np.linspace(0,resolution)/resolution)
-    plt.hist(nomdist, bins=np.linspace(0,resolution)/resolution)
+    plt.hist(bias)
 
     plt.show()
-
-
-
-
-
-if __name__ == '__main__':
-
-    test()
