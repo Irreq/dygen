@@ -1,6 +1,6 @@
 # About
 
-Synthetic 1D Multi Biased Distribution
+Synthetic 1D Multi Biased Distribution Generation
 
 A program for generating multi biased distributions. This tool can be used for quickly generating biased random values for training data in machine learning. This is especially useful in early stages of neural network development or when you quickly want to try out a certain function without a sufficient dataset.
 
