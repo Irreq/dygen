@@ -8,6 +8,7 @@
 """
 DOCUMENTATION:          Generate a synthetic normal distribution.
                         Generate a naive integer partition.
+
 TODO:                   None
 """
 
@@ -133,7 +134,7 @@ def argrelextrema(data, comparator, axis=0, order=1, mode='clip'):
     return np.nonzero(results)
 
 
-def constrained_sum_sample_pos(total, n):
+def constrained_sum_sample_pos(n, total):
 
     """
     Integer partitioning of 'same' size.
@@ -144,10 +145,11 @@ def constrained_sum_sample_pos(total, n):
     ARGUMENTS:
         - n:                int() The number of groups of integer that
                             together sums up to 'n'. Eg, 3
+
         - total:            int() An integer which will be partitioned of
                             random size. Eg, 17
     RETURNS:
-                            list() A partition of size 'n' that sums up
+        - partitioned:      list() A partition of size 'n' that sums up
                             to 'total'. Eg, [6, 6, 5]
 
     TODO:                   None
@@ -155,9 +157,11 @@ def constrained_sum_sample_pos(total, n):
 
     dividers = sorted(np.random.choice(range(1, total), n - 1))
 
-    return [a - b for a, b in zip(dividers + [total], [0] + dividers)]
+    partitioned = [a - b for a, b in zip(dividers + [total], [0] + dividers)]
 
-def constrained_sum_sample_nonneg(total, n):
+    return partitioned
+
+def constrained_sum_sample_nonneg(n, total):
 
     """
     Integer partitioning of random similar size.
@@ -168,61 +172,59 @@ def constrained_sum_sample_nonneg(total, n):
     ARGUMENTS:
         - n:                int() The number of groups of integer that
                             together sums up to 'n'. Eg, 3
+
         - total:            int() An integer which will be partitioned of
                             random size. Eg, 17
     RETURNS:
-                            list() A partition of size 'n' that sums up
+        - partitioned:      list() A partition of size 'n' that sums up
                             to 'total'. Eg, [7, 4, 6]
 
     TODO:                   None
     """
 
-    return [x - 1 for x in constrained_sum_sample_pos(n, total + n)]
+    partitioned = [x - 1 for x in constrained_sum_sample_pos(n, total + n)]
 
-def partion_n_times(total, n):
+    return partitioned
+
+def partion_n_times(n, total):
 
     """
     Integer partitioning of same size.
 
     NOTE:                   If mod(total, n) != 0, then some partions will
                             be of larger size, but together sum up to total.
-                            Zeros will be appended since you are trying to
-                            partition an integer more times than it consists of.
+
     ARGUMENTS:
-        - total:            int() An integer which will be partitioned of
-                            random size. Eg, 17
         - n:                int() The number of groups of integer that
                             together sums up to 'n'. Eg, 3
 
+        - total:            int() An integer which will be partitioned of
+                            random size. Eg, 17
     RETURNS:
-                            list() A partition of size 'n' that sums up
-                            to 'total'. Eg, [6, 5, 6]
+        - partitioned:      list() A partition of size 'n' that sums up
+                            to 'total'. Eg, [7, 4, 6]
 
-    TODO:                   Fix float partition. At the moment, the total
-                            will be lower as the function tries to convert
-                            the value to integer.
+    TODO:                   None
     """
 
-    chunk = total // n
 
-    return [chunk + 1 if i < total%n else chunk for i in range(n)]
+        partitioned = []
 
-def consecutive_constrained_sum(total, n):
-    Number = total
-    lub = []
-    for i in range(2, Number + 1):
-        if(Number % i == 0):
-            isprime = 1
-            for j in range(2, (i //2 + 1)):
-                if(i % j == 0):
-                    isprime = 0
-                    break
+        for i in range(n):
+            value = total // n
+            if i < total%n:
+                value += 1
+            partitioned.append(value)
 
-            if (isprime == 1):
-                # print(" %d is a Prime Factor of a Given Number %d" %(i, Number))
-                lub.append(i)
-    print(lub)
-    # return partitioned
+        partitioned = 
+
+    modulo = total % n
+    partitioned = [list(range(int(total/n))) for i in range(n)]
+
+    for index in np.random.choice(list(range(len(partitioned))), modulo, replace=False): # Getting indexes of mod(total, n) so they will be appended by 1
+        partitioned[index].append(max(partitioned[index])+1)
+
+    return partitioned
 
 class KernelGenerator(object):
 
@@ -392,8 +394,12 @@ class KernelGenerator(object):
 
         """
         Adds distributions from a dictionary
+
+
         kernel = eg, {'tag':[[0.4]]}
+
         returns = dict() # distribution
+
         """
 
         if len(kernel) == 0:
@@ -552,12 +558,3 @@ class BiasedDistribution(object):
         # return np.array(final_distribution)
 
         dist = [1, 1, 0.5, 1]
-
-
-if __name__ == "__main__":
-
-    data = partion_n_times(7, 3)
-    print(data)
-    print(len(data))
-    print(sum(data))
-    print(np.mean(data))
