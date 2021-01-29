@@ -14,7 +14,7 @@ TODO:                   None
 
 import numpy as np
 
-from sklearn.neighbors.kde import KernelDensity
+# from sklearn.neighbors.kde import KernelDensity
 
 def addnoise(self, *snr):
 
