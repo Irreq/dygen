@@ -221,8 +221,9 @@ def consecutive_constrained_sum(total, n):
             if (isprime == 1):
                 # print(" %d is a Prime Factor of a Given Number %d" %(i, Number))
                 lub.append(i)
-    print(lub)
+    # print(lub)
     # return partitioned
+    return lub
 
 class KernelGenerator(object):
 
@@ -556,8 +557,67 @@ class BiasedDistribution(object):
 
 if __name__ == "__main__":
 
-    data = partion_n_times(7, 3)
-    print(data)
-    print(len(data))
-    print(sum(data))
-    print(np.mean(data))
+    a = constrained_sum_sample_pos(13, 4)
+
+    print(sum(a))
+
+    print(a)
+
+    # data = partion_n_times(7, 3)
+    # print(data)
+    # print(len(data))
+    # print(sum(data))
+    # print(np.mean(data))
+
+
+def constrained_sum_sample_pos(n, total):
+    """
+    Integer partitioning of 'same' size.
+
+    NOTE:                   Return a randomly chosen list of n positive
+                            integers summing to total. Each such list is
+                            equally likely to occur.
+    ARGUMENTS:
+        - n:                int() The number of groups of integer that
+                            together sums up to 'n'. Eg, 3
+
+        - total:            int() An integer which will be partitioned of
+                            random size. Eg, 17
+    RETURNS:
+        - partitioned:      list() A partition of size 'n' that sums up
+                            to 'total'. Eg, [6, 6, 5]
+
+    TODO:                   None
+    """
+
+    dividers = sorted(np.random.choice(range(1, total), n - 1))
+
+    partitioned = [a - b for a, b in zip(dividers + [total], [0] + dividers)]
+
+    return partitioned
+
+
+def constrained_sum_sample_nonneg(n, total):
+    """
+    Integer partitioning of random similar size.
+
+    NOTE:                   Return a randomly chosen list of n nonnegative
+                            integers summing to total. Each such list is
+                            equally likely to occur.
+    ARGUMENTS:
+        - n:                int() The number of groups of integer that
+                            together sums up to 'n'. Eg, 3
+
+        - total:            int() An integer which will be partitioned of
+                            random size. Eg, 17
+    RETURNS:
+        - partitioned:      list() A partition of size 'n' that sums up
+                            to 'total'. Eg, [7, 4, 6]
+
+    TODO:                   None
+    """
+
+    partitioned = [x - 1 for x in constrained_sum_sample_pos(n, total + n)]
+
+    return partitioned
+
